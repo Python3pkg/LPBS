@@ -21,12 +21,12 @@
 
 """ Manage Configuration """
 
-from ConfigParser import SafeConfigParser, ParsingError
-from ConfigParser import Error as ConfigParserError
+from configparser import SafeConfigParser, ParsingError
+from configparser import Error as ConfigParserError
 import os
 import sys
 import re
-from StringIO import StringIO
+from io import StringIO
 
 
 DEFAULTS = StringIO("""\
@@ -151,39 +151,39 @@ def verify_config(config):
         ('Mail', 'tls'), ('Growl', 'sticky')]:
             try:
                 config.getboolean(section, key)
-            except ValueError, error:
+            except ValueError as error:
                 config.set(section, key, 'false')
-                print >> sys.stderr, "Illegal value for %s in Section %s." \
-                        % (section, key)
-                print >> sys.stderr, str(error)
-                print >> sys.stderr, "Set %s to False" % key
+                print("Illegal value for %s in Section %s." \
+                        % (section, key), file=sys.stderr)
+                print(str(error), file=sys.stderr)
+                print("Set %s to False" % key, file=sys.stderr)
         hostname = config.get('Server', 'hostname')
         if not re.match(r'^[A-Za-z0-9\-]+$', hostname):
-            print >> sys.stderr, "Server hostname was %s, " % hostname,
-            print >> sys.stderr, "must match '^[A-Za-z0-9\\-]+$'. " \
-                                 "Set to 'localhost'."
+            print("Server hostname was %s, " % hostname, end=' ', file=sys.stderr)
+            print("must match '^[A-Za-z0-9\\-]+$'. " \
+                                 "Set to 'localhost'.", file=sys.stderr)
             config.set('Server', 'hostname', 'localhost')
         domain = config.get('Server', 'domain')
         if not re.match(r'^[A-Za-z0-9\-\.]+$', domain):
-            print >> sys.stderr, "Server domain was %s, " % hostname,
-            print >> sys.stderr, "must match '^[A-Za-z0-9\\-\\.]+$'. " \
-                                 "Set to 'local'."
+            print("Server domain was %s, " % hostname, end=' ', file=sys.stderr)
+            print("must match '^[A-Za-z0-9\\-\\.]+$'. " \
+                                 "Set to 'local'.", file=sys.stderr)
             config.set('Server', 'domain', 'local')
         hostname = config.get('Node', 'hostname')
         if not re.match(r'^[A-Za-z0-9\-]+$', hostname):
-            print >> sys.stderr, "Node hostname was %s, " % hostname,
-            print >> sys.stderr, "must match '^[A-Za-z0-9\\-]+$'. " \
-                                 "Set to 'localhost'."
+            print("Node hostname was %s, " % hostname, end=' ', file=sys.stderr)
+            print("must match '^[A-Za-z0-9\\-]+$'. " \
+                                 "Set to 'localhost'.", file=sys.stderr)
             config.set('Node', 'hostname', 'localhost')
         domain = config.get('Node', 'domain')
         if not re.match(r'^[A-Za-z0-9\-\.]+$', domain):
-            print >> sys.stderr, "Node domain was %s, " % hostname,
-            print >> sys.stderr, "must match '^[A-Za-z0-9\\-\\.]+$'. " \
-                                 "Set to 'local'."
+            print("Node domain was %s, " % hostname, end=' ', file=sys.stderr)
+            print("must match '^[A-Za-z0-9\\-\\.]+$'. " \
+                                 "Set to 'local'.", file=sys.stderr)
             config.set('Node', 'domain', 'local')
-    except ConfigParserError, error:
-        print >> sys.stderr, "Unrecoverable error in config data:"
-        print >> sys.stderr, str(error)
+    except ConfigParserError as error:
+        print("Unrecoverable error in config data:", file=sys.stderr)
+        print(str(error), file=sys.stderr)
         sys.exit(1)
 
 
@@ -199,12 +199,12 @@ def get_config(config_file):
     config.readfp(DEFAULTS)
     config_files = []
     # $LPBS_HOME/lpbs.cfg
-    if os.environ.has_key('LPBS_HOME'):
+    if 'LPBS_HOME' in os.environ:
         global_config_file = os.path.join(os.environ['LPBS_HOME'], 'lpbs.cfg')
         if os.path.isfile(global_config_file):
             config_files.append(global_config_file)
     # $HOME/.lpbs.cfg
-    if os.environ.has_key('HOME'):
+    if 'HOME' in os.environ:
         user_config_file = os.path.join(os.environ['HOME'], '.lpbs.cfg')
         if os.path.isfile(user_config_file):
             config_files.append(user_config_file)
@@ -216,8 +216,8 @@ def get_config(config_file):
         pass
     try:
         config.read(config_files)
-    except ParsingError, error:
-        print >> sys.stderr, str(error)
+    except ParsingError as error:
+        print(str(error), file=sys.stderr)
 
     verify_config(config)
     return config
@@ -227,14 +227,14 @@ def verify_lpbs_home():
     """ Verify existence and writability of LPBS_HOME. Try to create files as
         necessary
     """
-    if not os.environ.has_key('LPBS_HOME'):
-        print >> sys.stderr, "LPBS_HOME must be defined"
+    if 'LPBS_HOME' not in os.environ:
+        print("LPBS_HOME must be defined", file=sys.stderr)
         return 1
     if not os.path.isdir(os.environ['LPBS_HOME']):
-        print >> sys.stderr, "LPBS_HOME must be a directory"
+        print("LPBS_HOME must be a directory", file=sys.stderr)
         return 1
     if not os.access(os.environ['LPBS_HOME'], os.W_OK):
-        print >> sys.stderr, "LPBS_HOME must be writable"
+        print("LPBS_HOME must be writable", file=sys.stderr)
         return 1
     configfile = os.path.join(os.environ['LPBS_HOME'], 'lpbs.cfg')
     if not os.path.isfile(configfile):

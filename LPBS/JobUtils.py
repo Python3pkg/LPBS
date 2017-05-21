@@ -28,7 +28,7 @@ import logging
 import pprint
 import time
 import datetime
-import cPickle as pickle
+import pickle as pickle
 from glob import glob
 
 
@@ -135,7 +135,7 @@ class JobInfo:
         full_info_str += "    Join_Path = %s\n" % self.join_path
         full_info_str += "    Mail_Points = %s\n" % self.mail_points
         full_info_str += "    Output_Path = %s\n" % self.output_path
-        for field in self.resources_used.keys():
+        for field in list(self.resources_used.keys()):
             full_info_str += "    resources_used.%s = %s\n" % (field,
                                                      self.resources_used[field])
         return full_info_str
@@ -150,7 +150,7 @@ class JobInfo:
                               '-'*20, '-'*15, '-'*15, '-'*15, '-', '-'*15)
 
         walltime = ""
-        if self.resources_used.has_key('walltime'):
+        if 'walltime' in self.resources_used:
             walltime = self.resources_used['walltime']
         short_info_str += "%-20s %-15s %-15s %-15s %-1s %-15s" % (
                           self.job_id[:20], self.name[:15], self.owner[:15],
@@ -213,7 +213,7 @@ def get_new_job_id(options):
         sequencefile_fh = open(sequencefile, 'r')
         sequence = int(sequencefile_fh.read())
         sequencefile_fh.close()
-    except IOError, error:
+    except IOError as error:
         sequence = 0
     sequence = sequence + 1
     # write new sequence number back to sequence file
@@ -221,9 +221,9 @@ def get_new_job_id(options):
         sequencefile_fh = open(sequencefile, 'w')
         sequencefile_fh.write(str(sequence))
         sequencefile_fh.close()
-    except IOError, error:
-        print >> sys.stderr, "Could not write to %s:\n%s" \
-                             % (sequencefile, error)
+    except IOError as error:
+        print("Could not write to %s:\n%s" \
+                             % (sequencefile, error), file=sys.stderr)
         return None
     id_host = options.config.get("Server", 'hostname')
     id_domain = options.config.get("Server", 'domain')
@@ -246,7 +246,7 @@ def pid_for_job_id(job_id):
             try:
                 job_info.read_lock(lock_file)
                 return(job_info.pid)
-            except IOError, error:
+            except IOError as error:
                 logging.debug("Failed to open lock: %s", error)
                 return None
     logging.debug("No lock file found for job_id %s", job_id)
@@ -260,7 +260,7 @@ def send_sig_to_job_id(job_id, sig=signal.SIGTERM):
         try:
             os.kill(pid, sig)
             logging.info("Sent signal %s to job %s (PID %s)", sig, job_id, pid)
-        except OSError, error:
+        except OSError as error:
             logging.debug("Sent signal %s to job %s (PID %s)", sig, job_id, pid)
             logging.debug("Failed to send signal: %s", error)
     else:

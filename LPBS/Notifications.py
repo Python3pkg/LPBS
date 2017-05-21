@@ -154,7 +154,7 @@ class Notifier:
                     description=self._get_notify_description(condition,
                     message), icon="", sticky=self.growl['sticky'],
                     priority=1)
-            except socket.error, error:
+            except socket.error as error:
                 logging.warn("Can't connect to growl on %s",
                               growl_notifier.hostname)
                 logging.debug("%s", error)
@@ -196,13 +196,13 @@ class Notifier:
         try:
             if test_socket(hostname, port):
                 growl_notifier.register()
-        except socket.error, error:
+        except socket.error as error:
             logging.warn("Can't connect to growl on %s:%s",
                           growl_notifier.hostname, port)
             logging.debug("%s", error)
             if not force:
                 return None
-        except gntp.BaseError, error:
+        except gntp.BaseError as error:
             logging.warn("GNTP Exception")
             logging.debug("%s", error)
             return None
@@ -245,13 +245,13 @@ class Notifier:
                     server.login(username, password)
                 server.sendmail(fromaddr, recipient, msg.as_string())
                 server.quit()
-            except socket.error, error:
+            except socket.error as error:
                 logging.warn("Can't connect to smtp server")
                 logging.debug("%s", error)
-            except smtplib.SMTPAuthenticationError, error:
+            except smtplib.SMTPAuthenticationError as error:
                 logging.warn("SMTP Authentication Error")
                 logging.debug("%s", error)
-            except smtplib.SMTPException, error:
+            except smtplib.SMTPException as error:
                 logging.warn("SMTP Exception")
                 logging.debug("%s", error)
 
@@ -266,7 +266,7 @@ def test_socket(host, port, timeout=10):
         sock.settimeout(timeout)
         sock.connect((host, port))
         return True
-    except socket.error, error:
+    except socket.error as error:
         logging.debug("test_socket(%s,%s,%s) failed: %s",
                       host, port, timeout, error)
         return False
